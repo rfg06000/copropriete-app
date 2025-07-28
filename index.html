@@ -422,7 +422,9 @@
                 <div id="filters-section" class="filters">
                     <div class="filter-group">
                         <label>Filtrer par nom de copropriétaire :</label>
-                        <input type="text" id="ownerFilter" placeholder="Nom du copropriétaire" oninput="filterTable()">
+                        <select id="ownerFilter" onchange="filterTable()">
+                            <option value="">-- Tous les copropriétaires --</option>
+                        </select>
                     </div>
                     <div class="filter-group">
                         <label>Filtrer par numéro de lot :</label>
@@ -434,16 +436,16 @@
                     <table id="lotsTable">
                         <thead>
                             <tr>
-                                <th onclick="sortTableByColumn(0)">N° Cop</th>
-                                <th onclick="sortTableByColumn(1)">Copropriétaire</th>
-                                <th onclick="sortTableByColumn(2)">Type</th>
-                                <th onclick="sortTableByColumn(3)">Description</th>
-                                <th onclick="sortTableByColumn(4)">N° Lot</th>
-                                <th onclick="sortTableByColumn(5)">Escalier</th>
-                                <th onclick="sortTableByColumn(6)">Etage</th>
-                                <th onclick="sortTableByColumn(7)">N° Plan</th>
-                                <th onclick="sortTableByColumn(8)">Clé 1 : charges générales</th>
-                                <th onclick="sortTableByColumn(9)">Clé 3 : ascenceurs</th>
+                                <th onclick="sortTableByColumn(0)">N° Cop ↕</th>
+                                <th onclick="sortTableByColumn(1)">Copropriétaire ↕</th>
+                                <th onclick="sortTableByColumn(2)">Type ↕</th>
+                                <th onclick="sortTableByColumn(3)">Description ↕</th>
+                                <th onclick="sortTableByColumn(4)">N° Lot ↕</th>
+                                <th onclick="sortTableByColumn(5)">Escalier ↕</th>
+                                <th onclick="sortTableByColumn(6)">Etage ↕</th>
+                                <th onclick="sortTableByColumn(7)">N° Plan ↕</th>
+                                <th onclick="sortTableByColumn(8)">Clé 1 : charges générales ↕</th>
+                                <th onclick="sortTableByColumn(9)">Clé 3 : ascenceurs ↕</th>
                             </tr>
                         </thead>
                         <tbody id="lotsTableBody">
@@ -550,6 +552,7 @@
             
             populateTable();
             populateOwnerSelect();
+            populateOwnerFilter();
             
             // Afficher le contenu des pages
             document.getElementById('lots-content').style.display = 'block';
@@ -733,6 +736,21 @@
         function populateOwnerSelect() {
             const select = document.getElementById('ownerSelect');
             select.innerHTML = '<option value="">-- Choisir un copropriétaire --</option>';
+
+            const owners = [...new Set(csvData.map(row => row['Copropriétaire'] || ''))]
+                .filter(owner => owner !== '').sort();
+
+            owners.forEach(owner => {
+                const option = document.createElement('option');
+                option.value = owner;
+                option.textContent = owner;
+                select.appendChild(option);
+            });
+        }
+
+        function populateOwnerFilter() {
+            const select = document.getElementById('ownerFilter');
+            select.innerHTML = '<option value="">-- Tous les copropriétaires --</option>';
 
             const owners = [...new Set(csvData.map(row => row['Copropriétaire'] || ''))]
                 .filter(owner => owner !== '').sort();
