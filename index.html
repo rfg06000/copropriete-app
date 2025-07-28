@@ -100,6 +100,11 @@
             font-size: 1.5em;
         }
 
+        .password-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
         .login-form input {
             width: 100%;
             padding: 15px;
@@ -107,12 +112,29 @@
             border-radius: 5px;
             font-family: 'Aptos', sans-serif;
             font-size: 16px;
-            margin-bottom: 20px;
+            padding-right: 45px;
         }
 
         .login-form input:focus {
             outline: none;
             border-color: #4a90e2;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 14px;
+            user-select: none;
+        }
+
+        .password-toggle:hover {
+            color: #4a90e2;
         }
 
         .login-btn {
@@ -354,7 +376,10 @@
         <div id="admin-page" class="page">
             <div id="admin-login" class="login-form">
                 <h3>Accès Administrateur</h3>
-                <input type="password" id="passwordInput" placeholder="Mot de passe" onkeypress="handlePasswordKeypress(event)">
+                <div class="password-container">
+                    <input type="password" id="passwordInput" placeholder="Mot de passe" onkeypress="handlePasswordKeypress(event)">
+                    <button type="button" class="password-toggle" onclick="togglePassword()">👁️</button>
+                </div>
                 <button class="login-btn" onclick="checkPassword()">Se connecter</button>
                 <div id="login-error" class="error" style="display: none; margin-top: 15px;">
                     Mot de passe incorrect
@@ -396,23 +421,12 @@
             <div id="lots-content" style="display: none;">
                 <div id="filters-section" class="filters">
                     <div class="filter-group">
-                        <label>Filtrer par numéro de copropriétaire :</label>
-                        <input type="text" id="copFilter" placeholder="N° copropriétaire" oninput="filterTable()">
+                        <label>Filtrer par nom de copropriétaire :</label>
+                        <input type="text" id="ownerFilter" placeholder="Nom du copropriétaire" oninput="filterTable()">
                     </div>
                     <div class="filter-group">
                         <label>Filtrer par numéro de lot :</label>
                         <input type="text" id="lotFilter" placeholder="Numéro de lot" oninput="filterTable()">
-                    </div>
-                    <div class="filter-group">
-                        <label>Trier par :</label>
-                        <select id="sortBy" onchange="sortTable()">
-                            <option value="owner">Copropriétaire</option>
-                            <option value="cop">N° copropriétaire</option>
-                            <option value="lot">N° lot</option>
-                            <option value="type">Type</option>
-                            <option value="escalier">Escalier</option>
-                            <option value="etage">Étage</option>
-                        </select>
                     </div>
                 </div>
 
@@ -511,6 +525,19 @@
             // Si pas de données sauvegardées, essayer de charger depuis GitHub
             loadFromGitHub(true); // true = chargement silencieux
         });
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('passwordInput');
+            const toggleButton = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleButton.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleButton.textContent = '👁️';
+            }
+        }
 
         function initializeDataDisplay() {
             // Trier par défaut par nom de copropriétaire
@@ -719,53 +746,14 @@
         }
 
         function filterTable() {
-            const copFilter = document.getElementById('copFilter').value.toLowerCase();
+            const ownerFilter = document.getElementById('ownerFilter').value.toLowerCase();
             const lotFilter = document.getElementById('lotFilter').value.toLowerCase();
 
             filteredData = csvData.filter(row => {
-                const cop = (row['N° cop'] || '').toString().toLowerCase();
+                const owner = (row['Copropriétaire'] || '').toLowerCase();
                 const lot = (row['N° lot'] || '').toString().toLowerCase();
 
-                return cop.includes(copFilter) && lot.includes(lotFilter);
-            });
-
-            populateTable();
-        }
-
-        function sortTable() {
-            const sortBy = document.getElementById('sortBy').value;
-            
-            filteredData.sort((a, b) => {
-                let valueA, valueB;
-                
-                switch(sortBy) {
-                    case 'cop':
-                        valueA = parseInt(a['N° cop'] || '0');
-                        valueB = parseInt(b['N° cop'] || '0');
-                        return valueA - valueB;
-                    case 'lot':
-                        valueA = parseInt(a['N° lot'] || '0');
-                        valueB = parseInt(b['N° lot'] || '0');
-                        return valueA - valueB;
-                    case 'owner':
-                        valueA = (a['Copropriétaire'] || '').toLowerCase();
-                        valueB = (b['Copropriétaire'] || '').toLowerCase();
-                        return valueA.localeCompare(valueB);
-                    case 'type':
-                        valueA = (a['Type'] || '').toLowerCase();
-                        valueB = (b['Type'] || '').toLowerCase();
-                        return valueA.localeCompare(valueB);
-                    case 'escalier':
-                        valueA = (a['Escalier'] || '').toLowerCase();
-                        valueB = (b['Escalier'] || '').toLowerCase();
-                        return valueA.localeCompare(valueB);
-                    case 'etage':
-                        valueA = parseInt(a['Etage'] || '0');
-                        valueB = parseInt(b['Etage'] || '0');
-                        return valueA - valueB;
-                    default:
-                        return 0;
-                }
+                return owner.includes(ownerFilter) && lot.includes(lotFilter);
             });
 
             populateTable();
