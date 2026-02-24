@@ -1,4 +1,4 @@
-Nø cop;Copropri‚taire;Type;Description;Nø lot;Escalier;Etage;Porte cave;Nø plan;Cl‚ 1 : charges g‚n‚rales;Cl‚ 3 : ascenceurs
+NÂ° cop;CopropriÃ©taire;Type;Description;NÂ° lot;Escalier;Etage;Porte cave;NÂ° plan;ClÃ© 1 : charges gÃ©nÃ©rales;ClÃ© 3 : ascenceurs
 94;TREHAULT Alexia (Madame);Cave;Cave;201;3;sous-sol;;17;2;0
 85;UZZAN Ralph (Monsieur);Cave;Cave;202;3;sous-sol;;18;2;0
 82;TOYAS Christos (M. ou Mme);Cave;Cave;203;2;sous-sol;;19;2;0
@@ -17,7 +17,7 @@ Nø cop;Copropri‚taire;Type;Description;Nø lot;Escalier;Etage;Porte cave;Nø plan;
 6;BONICCO Ingrid (Mademoiselle);Cave;Cave;217;3;sous-sol;;33;2;0
 37;MILANESE F. (Madame);Cave;Cave;218;0;sous-sol;;34;2;0
 89;ALLAM Charlotte (Madame);Cave;Cave;219;1;sous-sol;;35;2;0
-72;SILVE Fran‡ois (Monsieur);Cave;Cave;220;2;sous-sol;;36;3;0
+72;SILVE FranÃ§ois (Monsieur);Cave;Cave;220;2;sous-sol;;36;3;0
 37;MILANESE F. (Madame);Cave;Cave;221;0;sous-sol;;37;2;0
 16;DE CHELLE Arnaud (M. ou Mme);Cave;Cave;222;3;sous-sol;;38;2;0
 17;DONAT (Madame);Cave;Cave;223;0;sous-sol;;39;2;0
@@ -29,7 +29,7 @@ Nø cop;Copropri‚taire;Type;Description;Nø lot;Escalier;Etage;Porte cave;Nø plan;
 77;KEISSER M. / FOLLIOT A. (Indiv;Cave;Cave;231;1;sous-sol;;47;2;0
 71;NAON RICHARD C/O UDAF (Monsieu;Cave;Cave;232;3;sous-sol;;48;2;0
 1;ATTALI Stephane (M. ou Mme);Cave;Cave;233;1;sous-sol;;49;2;0
-72;SILVE Fran‡ois (Monsieur);Garag;Garage;237;0;sous-sol;;1;15;0
+72;SILVE FranÃ§ois (Monsieur);Garag;Garage;237;0;sous-sol;;1;15;0
 90;MATUA Pavel (M. ou Mme);Garag;Garage;238;0;sous-sol;;2;15;0
 11;BUFFA Serge (M. ou Mme);Garag;Garage;239;0;sous-sol;;3;15;0
 79;ROALDES Gael (Monsieur);Garag;Garage;240;0;sous-sol;;4;15;0
@@ -56,8 +56,8 @@ Nø cop;Copropri‚taire;Type;Description;Nø lot;Escalier;Etage;Porte cave;Nø plan;
 22;FILIPPI Sylvie (Madame);Chamb;Atelier;268;2;rdc;;17;6;0
 22;FILIPPI Sylvie (Madame);Chamb;Atelier;269;2;rdc;;18;6;0
 22;FILIPPI Sylvie (Madame);Chamb;Atelier;270;2;rdc;;19;6;0
-72;SILVE Fran‡ois (Monsieur);Appar;T3 & terrasse;271;2;rdc;;20;230;0
-72;SILVE Fran‡ois (Monsieur);Appar;Studio;272;2;rdc;;21;90;0
+72;SILVE FranÃ§ois (Monsieur);Appar;T3 & terrasse;271;2;rdc;;20;230;0
+72;SILVE FranÃ§ois (Monsieur);Appar;Studio;272;2;rdc;;21;90;0
 87;ATIBARD Damien (M. ou Mme);Appar;Studio;273;2;rdc;;22;80;0
 22;FILIPPI Sylvie (Madame);Appar;chambre de service;274;1;rdc;;23;30;0
 64;FILIPPI Jean Luc (M. ou Mme);Chamb;Chambre de service;275;2;rdc;;24;35;0
@@ -109,3 +109,4 @@ Nø cop;Copropri‚taire;Type;Description;Nø lot;Escalier;Etage;Porte cave;Nø plan;
 90;MATUA Pavel (M. ou Mme);Appar;T3;321;2;5;;3;270;490
 37;MILANESE F. (Madame);Appar;T3;322;3;5;;4;335;610
 22;FILIPPI Sylvie (Madame);Appar;T1;323;2;rdc;;5;123;25
+
