@@ -526,6 +526,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script>
+        // IMPORTANT : REMPLACEZ PAR VOTRE URL GOOGLE SCRIPT
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxka-_FU79ih1UxYt82G-BO9nDcg87LHrVvrk3M29gM-wwPRIA42QOKJ8yx-6ER7t11/exec';
         let csvData = [];
         let filteredData = [];
         let isAdminLoggedIn = false;
@@ -540,14 +542,37 @@
                     
                     if (csvData.length > 0) {
                         initializeDataDisplay();
-                        return;
                     }
                 } catch (e) {
                     console.log('Erreur lors du chargement des données sauvegardées');
                 }
             }
             
+            // Toujours essayer de charger depuis GitHub
             loadFromGitHub(true);
+            
+            // Gérer la navigation par ancre (#cave, #calcul, etc.) dans l'URL
+            // Cette partie doit fonctionner MÊME SANS données
+            setTimeout(() => {
+                const hash = window.location.hash.substring(1); // Enlever le #
+                if (hash) {
+                    const buttons = {
+                        'admin': 0,
+                        'lots': 1,
+                        'calcul': 2,
+                        'cave': 3
+                    };
+                    
+                    if (buttons.hasOwnProperty(hash)) {
+                        const navButtons = document.querySelectorAll('.nav-btn');
+                        const button = navButtons[buttons[hash]];
+                        
+                        if (button) {
+                            showPage(hash, button);
+                        }
+                    }
+                }
+            }, 200);
         });
 
         function togglePassword() {
@@ -619,6 +644,28 @@
                                 statusDiv.style.display = 'block';
                                 statusDiv.className = 'success';
                                 showSuccess('Fichier CSV chargé depuis GitHub avec succès');
+                            }
+                            
+                            // Gérer la navigation après le chargement
+                            const hash = window.location.hash.substring(1);
+                            if (hash && silent) {
+                                const buttons = {
+                                    'admin': 0,
+                                    'lots': 1,
+                                    'calcul': 2,
+                                    'cave': 3
+                                };
+                                
+                                if (buttons.hasOwnProperty(hash)) {
+                                    const navButtons = document.querySelectorAll('.nav-btn');
+                                    const button = navButtons[buttons[hash]];
+                                    
+                                    if (button) {
+                                        setTimeout(() => {
+                                            showPage(hash, button);
+                                        }, 100);
+                                    }
+                                }
                             }
                         }
                     });
@@ -988,10 +1035,6 @@
                                     style="padding: 8px 15px; font-size: 14px;">
                                 Enregistrer
                             </button>
-                            ${currentCaveNumber ? `<button onclick="deleteCaveNumber('${owner}', '${lotNum}')" 
-                                    style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;">
-                                Supprimer
-                            </button>` : ''}
                         </div>
                     </div>
                 `;
@@ -1027,47 +1070,59 @@
                 return;
             }
 
-            const existingIndex = caveData.findIndex(item => 
-                item.owner === owner && item.lot === lotNum
-            );
-
-            const newEntry = {
+            // Récupérer les infos du lot
+            const lot = csvData.find(row => row['N° lot'] === lotNum);
+            
+            // Préparer les données pour Google Sheets
+            const data = {
                 owner: owner,
                 lot: lotNum,
-                caveNumber: caveNum,
-                timestamp: new Date().toISOString()
+                type: lot['Type'] || '',
+                description: lot['Description'] || '',
+                caveNumber: caveNum
             };
 
-            if (existingIndex >= 0) {
-                caveData[existingIndex] = newEntry;
-            } else {
-                caveData.push(newEntry);
-            }
+            // Envoyer à Google Sheets
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                // Mise à jour locale (pour affichage)
+                const existingIndex = caveData.findIndex(item => 
+                    item.owner === owner && item.lot === lotNum
+                );
 
-            localStorage.setItem('caveData', JSON.stringify(caveData));
-            
-            updateDataCSVWithCaveNumber(lotNum, caveNum);
-            saveUpdatedCSV();
-            
-            showSuccess(`Numéro de cave enregistré pour le lot ${lotNum}`);
-            
-            loadOwnerCaveLots();
-        }
+                const newEntry = {
+                    owner: owner,
+                    lot: lotNum,
+                    caveNumber: caveNum,
+                    timestamp: new Date().toISOString()
+                };
 
-        function deleteCaveNumber(owner, lot) {
-            if (!confirm(`Voulez-vous vraiment supprimer le numéro de cave pour le lot ${lot} ?`)) {
-                return;
-            }
+                if (existingIndex >= 0) {
+                    caveData[existingIndex] = newEntry;
+                } else {
+                    caveData.push(newEntry);
+                }
 
-            caveData = caveData.filter(item => !(item.owner === owner && item.lot === lot));
-            localStorage.setItem('caveData', JSON.stringify(caveData));
-            
-            updateDataCSVWithCaveNumber(lot, '');
-            saveUpdatedCSV();
-            
-            showSuccess('Numéro de cave supprimé avec succès');
-            
-            loadOwnerCaveLots();
+                localStorage.setItem('caveData', JSON.stringify(caveData));
+                
+                // Mettre à jour l'affichage dans le tableau
+                updateDataCSVWithCaveNumber(lotNum, caveNum);
+                
+                showSuccess(`✓ Numéro ${caveNum} enregistré pour le lot ${lotNum} et envoyé à Google Sheets`);
+                
+                loadOwnerCaveLots();
+            })
+            .catch(error => {
+                showError('Erreur lors de l\'envoi à Google Sheets. Vérifiez votre connexion internet.');
+                console.error('Erreur:', error);
+            });
         }
 
         function updateDataCSVWithCaveNumber(lotNum, caveNumber) {
@@ -1079,25 +1134,6 @@
                     filterTable();
                 }
             }
-        }
-
-        function saveUpdatedCSV() {
-            let csvContent = 'N° cop;Copropriétaire;Type;Description;N° lot;Escalier;Etage;Porte cave;N° plan;Clé 1 : charges générales;Clé 3 : ascenceurs\n';
-            
-            csvData.forEach(row => {
-                csvContent += `${row['N° cop'] || ''};${row['Copropriétaire'] || ''};${row['Type'] || ''};${row['Description'] || ''};${row['N° lot'] || ''};${row['Escalier'] || ''};${row['Etage'] || ''};${row['Porte cave'] || ''};${row['N° plan'] || ''};${row['Clé 1 : charges générales'] || ''};${row['Clé 3 : ascenceurs'] || ''}\n`;
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'data.csv');
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         function loadCaveData() {
