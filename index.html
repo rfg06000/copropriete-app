@@ -591,8 +591,6 @@
                         <select id="suiviStatutFilter" onchange="filterSuiviTable()">
                             <option value="">-- Tous --</option>
                             <option value="Ouvert">Ouvert</option>
-                            <option value="En cours">En cours</option>
-                            <option value="En attente">En attente</option>
                             <option value="Clos">Clos</option>
                         </select>
                     </div>
@@ -614,13 +612,12 @@
                     <table id="suiviTable">
                         <thead>
                             <tr>
-                                <th onclick="sortSuiviTableByColumn(0)">ID ↕</th>
-                                <th onclick="sortSuiviTableByColumn(1)">Date ouverture ↕</th>
-                                <th onclick="sortSuiviTableByColumn(2)">Sujet ↕</th>
+                                <th onclick="sortSuiviTableByColumn(0)">N° ↕</th>
+                                <th onclick="sortSuiviTableByColumn(1)">Sujet ↕</th>
+                                <th>Synthèse (dernier suivi)</th>
                                 <th onclick="sortSuiviTableByColumn(3)">Statut ↕</th>
                                 <th onclick="sortSuiviTableByColumn(4)">Responsable ↕</th>
-                                <th onclick="sortSuiviTableByColumn(5)">À relancer ↕</th>
-                                <th onclick="sortSuiviTableByColumn(6)">Échéance ↕</th>
+                                <th onclick="sortSuiviTableByColumn(5)">Échéance ↕</th>
                                 <th>Fiche</th>
                             </tr>
                         </thead>
@@ -653,6 +650,10 @@
                 <label>Description (dernier état connu)</label>
                 <textarea id="np-description" rows="3" style="width:100%;padding:10px;border:2px solid #e1e5e9;border-radius:5px;font-family:'Aptos',sans-serif;"></textarea>
             </div>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Résumé (20 caractères max, affiché dans la liste)</label>
+                <input type="text" id="np-resume" maxlength="20" placeholder="Ex: RV le 15/07">
+            </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Date d'ouverture</label>
@@ -661,7 +662,7 @@
                 <div class="form-group">
                     <label>Statut</label>
                     <select id="np-statut">
-                        <option>Ouvert</option><option>En cours</option><option>En attente</option><option>Clos</option>
+                        <option>Ouvert</option><option>Clos</option>
                     </select>
                 </div>
             </div>
@@ -670,12 +671,6 @@
                     <label>Responsable</label>
                     <input type="text" id="np-responsable" placeholder="CT, CS, copropriétaire, prestataire...">
                 </div>
-                <div class="form-group">
-                    <label>À relancer</label>
-                    <input type="text" id="np-aRelancer">
-                </div>
-            </div>
-            <div class="form-row">
                 <div class="form-group">
                     <label>Date d'échéance</label>
                     <input type="date" id="np-dateEcheance">
@@ -699,25 +694,30 @@
     <div class="modal-overlay" id="suiviFicheModal" onclick="closeSuiviFicheModal(event)">
         <div class="modal">
             <button class="modal-close" onclick="document.getElementById('suiviFicheModal').classList.remove('active')">✕</button>
-            <h3 id="suivi-modal-title">Point de suivi</h3>
+            <h3 id="suivi-modal-title" style="display:flex;align-items:center;gap:10px;">
+                <span id="suivi-modal-title-text">Point de suivi</span>
+                <button type="button" onclick="toggleRenameSuivi()" style="background:none;border:none;cursor:pointer;font-size:16px;" title="Renommer le sujet">✎</button>
+            </h3>
+            <div id="suivi-rename-form" style="display:none;margin-bottom:15px;">
+                <input type="text" id="suivi-rename-sujet" style="width:100%;padding:10px;border:2px solid #e1e5e9;border-radius:5px;font-family:'Aptos',sans-serif;margin-bottom:8px;">
+                <button class="calc-btn" onclick="submitRenamePoint()" style="padding:6px 15px;font-size:14px;">Enregistrer</button>
+            </div>
             <div id="suivi-modal-body"></div>
             <div style="margin-top:20px;border-top:2px solid #e1e5e9;padding-top:15px;">
                 <h4 style="color:#2c5aa0;margin-bottom:10px;">Historique</h4>
                 <div id="suivi-historique-list" style="max-height:200px;overflow-y:auto;margin-bottom:15px;"></div>
 
                 <h4 style="color:#2c5aa0;margin-bottom:10px;">Ajouter un suivi</h4>
-                <textarea id="suivi-new-comment" rows="2" placeholder="Note (obligatoire)..." style="width:100%;padding:10px;border:2px solid #e1e5e9;border-radius:5px;font-family:'Aptos',sans-serif;margin-bottom:10px;"></textarea>
+                <textarea id="suivi-new-comment" rows="2" placeholder="Note détaillée (obligatoire)..." style="width:100%;padding:10px;border:2px solid #e1e5e9;border-radius:5px;font-family:'Aptos',sans-serif;margin-bottom:10px;"></textarea>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label>Résumé (20 caractères max, affiché dans la liste)</label>
+                    <input type="text" id="suivi-new-resume" maxlength="20" placeholder="Ex: RV le 15/07">
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Responsable</label>
                         <input type="text" id="suivi-new-responsable">
                     </div>
-                    <div class="form-group">
-                        <label>À relancer</label>
-                        <input type="text" id="suivi-new-aRelancer">
-                    </div>
-                </div>
-                <div class="form-row">
                     <div class="form-group">
                         <label>Date d'échéance</label>
                         <input type="date" id="suivi-new-echeance">
@@ -733,7 +733,7 @@
                     <div class="form-group">
                         <label>Statut</label>
                         <select id="suivi-new-statut">
-                            <option>Ouvert</option><option>En cours</option><option>En attente</option><option>Clos</option>
+                            <option>Ouvert</option><option>Clos</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -748,7 +748,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script>
-        const SUIVI_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzw_VQgRbmdCt1oJ6RMm2uwSR7ieXJ2Ow-fa8R72uwyzJ-fjHXnSMaoCog7zTQ6GHdVAg/exec';
+        const SUIVI_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFsP0iXSLaPSDwSbrc8m-OKa0-mSfZmjuFjbScYjYv9TLdUdRPFeqm_eV9S4EC8L17kQ/exec';
         let csvData = [];
         let filteredData = [];
         let isAdminLoggedIn = false;
@@ -1268,20 +1268,53 @@
                 });
         }
 
+        function formatDateFR(isoOrDateString) {
+            if (!isoOrDateString) return '';
+            const d = new Date(isoOrDateString);
+            if (isNaN(d.getTime())) return isoOrDateString;
+            return d.toLocaleDateString('fr-FR');
+        }
+
+        function computeSynthese(pointId) {
+            const entries = suiviHistorique
+                .filter(h => String(h.PointId) === String(pointId))
+                .sort((a, b) => new Date(b.Date) - new Date(a.Date));
+            return entries.length ? (entries[0].Resume || '—') : '—';
+        }
+
+        function isEcheanceDepassee(point) {
+            if (!point.DateEcheance || point.Statut === 'Clos') return false;
+            const echeance = new Date(point.DateEcheance);
+            if (isNaN(echeance.getTime())) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return echeance < today;
+        }
+
         function populateSuiviTable() {
             const tbody = document.getElementById('suiviTableBody');
             tbody.innerHTML = '';
 
-            filteredSuiviData.forEach(point => {
+            const sorted = [...filteredSuiviData].sort((a, b) => {
+                if (!a.DateEcheance && !b.DateEcheance) return 0;
+                if (!a.DateEcheance) return 1;
+                if (!b.DateEcheance) return -1;
+                return new Date(a.DateEcheance) - new Date(b.DateEcheance);
+            });
+
+            sorted.forEach(point => {
                 const tr = document.createElement('tr');
+                const echeanceHtml = isEcheanceDepassee(point)
+                    ? '<span style="color:#c0392b;font-weight:bold;">' + formatDateFR(point.DateEcheance) + '</span>'
+                    : formatDateFR(point.DateEcheance);
+
                 tr.innerHTML =
                     '<td>' + (point.ID || '') + '</td>' +
-                    '<td>' + (point.DateOuverture || '') + '</td>' +
                     '<td>' + (point.Sujet || '') + '</td>' +
+                    '<td>' + computeSynthese(point.ID) + '</td>' +
                     '<td>' + (point.Statut || '') + '</td>' +
                     '<td>' + (point.Responsable || '') + '</td>' +
-                    '<td>' + (point.ARelancer || '') + '</td>' +
-                    '<td>' + (point.DateEcheance || '') + '</td>' +
+                    '<td>' + echeanceHtml + '</td>' +
                     '<td><button class="btn-fiche" onclick="openSuiviFiche(\'' + point.ID + '\')">📄 Fiche</button></td>';
                 tbody.appendChild(tr);
             });
@@ -1327,10 +1360,10 @@
         function openNouveauPointForm() {
             document.getElementById('np-sujet').value = '';
             document.getElementById('np-description').value = '';
+            document.getElementById('np-resume').value = '';
             document.getElementById('np-dateOuverture').value = new Date().toISOString().slice(0, 10);
             document.getElementById('np-statut').value = 'Ouvert';
             document.getElementById('np-responsable').value = '';
-            document.getElementById('np-aRelancer').value = '';
             document.getElementById('np-dateEcheance').value = '';
             document.getElementById('np-priorite').value = '';
             document.getElementById('np-document').value = '';
@@ -1345,19 +1378,24 @@
 
         function submitNouveauPoint() {
             const sujet = document.getElementById('np-sujet').value.trim();
+            const resume = document.getElementById('np-resume').value.trim();
             if (!sujet) {
                 showError('Le sujet est obligatoire');
+                return;
+            }
+            if (!resume) {
+                showError('Le résumé (20 caractères max) est obligatoire');
                 return;
             }
 
             const data = {
                 action: 'create',
                 sujet: sujet,
+                resume: resume,
                 description: document.getElementById('np-description').value,
                 dateOuverture: document.getElementById('np-dateOuverture').value,
                 statut: document.getElementById('np-statut').value,
                 responsable: document.getElementById('np-responsable').value,
-                aRelancer: document.getElementById('np-aRelancer').value,
                 dateEcheance: document.getElementById('np-dateEcheance').value,
                 priorite: document.getElementById('np-priorite').value,
                 document: document.getElementById('np-document').value
@@ -1390,14 +1428,15 @@
 
             currentOpenSuiviId = String(id);
 
-            document.getElementById('suivi-modal-title').textContent = 'Point n° ' + point.ID + ' — ' + point.Sujet;
+            document.getElementById('suivi-modal-title-text').textContent = 'Point n° ' + point.ID + ' — ' + point.Sujet;
+            document.getElementById('suivi-rename-form').style.display = 'none';
+            document.getElementById('suivi-rename-sujet').value = point.Sujet || '';
 
             const fieldDefs = [
-                ['Date d\'ouverture', point.DateOuverture],
+                ['Date d\'ouverture', formatDateFR(point.DateOuverture)],
                 ['Statut', point.Statut],
                 ['Responsable', point.Responsable],
-                ['À relancer', point.ARelancer],
-                ['Date d\'échéance', point.DateEcheance],
+                ['Date d\'échéance', formatDateFR(point.DateEcheance)],
                 ['Priorité', point.Priorite],
                 ['Description', point.Description]
             ];
@@ -1415,8 +1454,8 @@
             renderSuiviHistoriqueList(id);
 
             document.getElementById('suivi-new-comment').value = '';
+            document.getElementById('suivi-new-resume').value = '';
             document.getElementById('suivi-new-responsable').value = '';
-            document.getElementById('suivi-new-aRelancer').value = '';
             document.getElementById('suivi-new-echeance').value = '';
             document.getElementById('suivi-new-priorite').value = '';
             document.getElementById('suivi-new-statut').value = point.Statut || '';
@@ -1435,16 +1474,16 @@
                 html = '<p style="color: #666;">Aucun historique pour ce point.</p>';
             }
             entries.forEach(h => {
-                const date = h.Date ? new Date(h.Date).toLocaleString('fr-FR') : '';
+                const date = h.Date ? formatDateFR(h.Date) + ' ' + new Date(h.Date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
                 let details = [];
                 if (h.Statut) details.push('Statut : ' + h.Statut);
                 if (h.Responsable) details.push('Responsable : ' + h.Responsable);
-                if (h.ARelancer) details.push('À relancer : ' + h.ARelancer);
-                if (h.DateEcheance) details.push('Échéance : ' + h.DateEcheance);
+                if (h.DateEcheance) details.push('Échéance : ' + formatDateFR(h.DateEcheance));
                 if (h.Priorite) details.push('Priorité : ' + h.Priorite);
 
                 html += '<div style="padding:10px 0;border-bottom:1px solid #e1e5e9;">' +
                     '<div style="font-size:12px;color:#666;">' + date + '</div>' +
+                    (h.Resume ? '<div style="font-weight:600;color:#2c5aa0;">' + h.Resume + '</div>' : '') +
                     '<div>' + (h.Note || '') + '</div>' +
                     (details.length ? '<div style="font-size:13px;color:#2c5aa0;">' + details.join(' · ') + '</div>' : '') +
                     (h.Document ? '<div><a href="' + h.Document + '" target="_blank">Pièce jointe</a></div>' : '') +
@@ -1462,8 +1501,19 @@
 
         function submitAjoutSuivi() {
             const note = document.getElementById('suivi-new-comment').value.trim();
+            const resume = document.getElementById('suivi-new-resume').value.trim();
+            const responsable = document.getElementById('suivi-new-responsable').value.trim();
+
             if (!note) {
                 showError('La note est obligatoire pour ajouter un suivi');
+                return;
+            }
+            if (!resume) {
+                showError('Le résumé (20 caractères max) est obligatoire');
+                return;
+            }
+            if (!responsable) {
+                showError('Le responsable est obligatoire pour ajouter un suivi');
                 return;
             }
 
@@ -1471,8 +1521,8 @@
                 action: 'ajoutSuivi',
                 id: currentOpenSuiviId,
                 note: note,
-                responsable: document.getElementById('suivi-new-responsable').value,
-                aRelancer: document.getElementById('suivi-new-aRelancer').value,
+                resume: resume,
+                responsable: responsable,
                 dateEcheance: document.getElementById('suivi-new-echeance').value,
                 priorite: document.getElementById('suivi-new-priorite').value,
                 statut: document.getElementById('suivi-new-statut').value,
@@ -1491,6 +1541,40 @@
                         return;
                     }
                     showSuccess('Suivi ajouté');
+                    loadSuiviData();
+                    setTimeout(() => openSuiviFiche(currentOpenSuiviId), 300);
+                })
+                .catch(error => {
+                    showError('Erreur lors de l\'envoi. Vérifiez votre connexion internet.');
+                    console.error('Erreur:', error);
+                });
+        }
+
+        function toggleRenameSuivi() {
+            const form = document.getElementById('suivi-rename-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function submitRenamePoint() {
+            const sujet = document.getElementById('suivi-rename-sujet').value.trim();
+            if (!sujet) {
+                showError('Le sujet ne peut pas être vide');
+                return;
+            }
+
+            fetch(SUIVI_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'renamePoint', id: currentOpenSuiviId, sujet: sujet })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (!result.ok) {
+                        showError('Erreur lors du renommage : ' + result.error);
+                        return;
+                    }
+                    showSuccess('Sujet mis à jour');
+                    document.getElementById('suivi-rename-form').style.display = 'none';
                     loadSuiviData();
                     setTimeout(() => openSuiviFiche(currentOpenSuiviId), 300);
                 })
